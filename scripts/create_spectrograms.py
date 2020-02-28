@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: create_spectrograms.py
+File: scripts/create_spectrograms.py
 Description: Process a folder of audio files to create a folder of mel
              spectrograms.
 """

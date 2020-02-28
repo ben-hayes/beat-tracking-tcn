@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: ballroom_dataset.py
+File: datasets/ballroom_dataset.py
 Description: A PyTorch dataset class representing the ballroom dataset.
 """
 
