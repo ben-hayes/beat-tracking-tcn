@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import os
 import numpy as np
 
+
 class BallroomDataset(Dataset):
     """
     A PyTorch Dataset wrapping the ballroom dataset for beat detection tasks
@@ -22,14 +23,14 @@ class BallroomDataset(Dataset):
             label_dir,
             sr=22050,
             hop_size_in_seconds=0.01,
-            trim_size=(81,3000)):
+            trim_size=(81, 3000)):
         """
         Initialise the dataset object.
 
         Parameters:
             spectrogram_dir: directory holding spectrograms as NumPy dumps
             label_dir: directory containing labels as NumPy dumps
-        
+
         Keyword Arguments:
             sr (=22050): Sample rate to use when converting annotations to
                          spectrogram frame indices
@@ -42,20 +43,21 @@ class BallroomDataset(Dataset):
         self.data_names = self._get_data_list()
 
         self.sr = 22050
-        self.hop_size = int(np.floor (hop_size_in_seconds * 22050))
+        self.hop_size = int(np.floor(hop_size_in_seconds * 22050))
         self.trim_size = trim_size
 
     def __len__(self):
         """Overload len() calls on object."""
         return len(self.data_names)
-    
+
     def __getitem__(self, i):
         """Overload square bracket indexing on object"""
         raw_spec, raw_beats = self._load_spectrogram_and_labels(i)
         x, y = self._trim_spec_and_labels(raw_spec, raw_beats)
-            
+
         return {
-            'spectrogram': torch.from_numpy(np.expand_dims(x.T, axis=0)).float(),
+            'spectrogram': torch.from_numpy(
+                    np.expand_dims(x.T, axis=0)).float(),
             'target': torch.from_numpy(y[:3000].astype('float64')).float(),
         }
 
@@ -69,7 +71,7 @@ class BallroomDataset(Dataset):
 
         Parameters:
             i: Index signifying which datapoint to fetch truth for
-        
+
         Keyword Arguments:
             quantised (=True): Whether to return a quantised grount truth
         """
@@ -87,13 +89,13 @@ class BallroomDataset(Dataset):
             labels: Labels as NumPy array
         """
 
-        x = np.zeros (self.trim_size)
-        y = np.zeros (self.trim_size[1])
+        x = np.zeros(self.trim_size)
+        y = np.zeros(self.trim_size[1])
 
         to_x = self.trim_size[0]
         to_y = min(self.trim_size[1], spec.shape[1])
 
-        x[:to_x, :to_y] = spec[:,:to_y]
+        x[:to_x, :to_y] = spec[:, :to_y]
         y[:to_y] = labels[:to_y]
 
         return x, y
@@ -143,35 +145,39 @@ class BallroomDataset(Dataset):
         label file.
         """
 
-        with open (
-            os.path.join(self.label_dir, self.data_names[i] + '.beats'),
-            'r') as f:
+        with open(
+                os.path.join(self.label_dir, self.data_names[i] + '.beats'),
+                'r') as f:
 
-            beat_times = np.array([self._text_label_to_float(line) for line in f])
+            beat_times =\
+                np.array([self._text_label_to_float(line) for line in f])
 
         return beat_times
 
     def _load_spectrogram_and_labels(self, i):
         """
-        Given an index for the data name array, return the contents of the 
+        Given an index for the data name array, return the contents of the
         corresponding spectrogram and label dumps.
         """
         data_name = self.data_names[i]
 
-        with open (os.path.join(self.label_dir, data_name + '.beats'), 'r') as f:
+        with open(
+                os.path.join(self.label_dir, data_name + '.beats'),
+                'r') as f:
+
             beat_times = np.array(
                 [self._text_label_to_float(line) for line in f]) * self.sr
-            
+
         spectrogram =\
             np.load(os.path.join(self.spectrogram_dir, data_name + '.npy'))
         beat_vector =\
             np.zeros(spectrogram.shape[-1])
-        
+
         for time in beat_times:
-            spec_frame = min(int(time / self.hop_size), beat_vector.shape[0] - 1)
-            for n in range (-2, 3):
+            spec_frame =\
+                min(int(time / self.hop_size), beat_vector.shape[0] - 1)
+            for n in range(-2, 3):
                 if 0 <= spec_frame + n < beat_vector.shape[0]:
                     beat_vector[spec_frame + n] = 1.0 if n == 0 else 0.5
 
         return spectrogram, beat_vector
-        
