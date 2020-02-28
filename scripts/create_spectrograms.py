@@ -1,3 +1,15 @@
+"""
+Ben Hayes 2020
+
+ECS7006P Music Informatics
+
+Coursework 1: Beat Tracking
+
+File: create_spectrograms.py
+Description: Process a folder of audio files to create a folder of mel
+             spectrograms.
+"""
+
 import librosa
 import numpy as np
 import os
@@ -5,6 +17,8 @@ from argparse import ArgumentParser
 
 
 def parse_args():
+    """Parse command line arguments using argparse module"""
+
     parser = ArgumentParser(
         description="Process a folder of audio files and output a folder of " +
                     "mel spectrograms as NumPy dumps")
