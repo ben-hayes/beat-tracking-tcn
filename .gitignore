@@ -133,3 +133,4 @@ data/*
 
 # Mac Nonsense
 .DS_Store
+.vscode/
