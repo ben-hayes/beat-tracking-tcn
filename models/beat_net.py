@@ -17,10 +17,13 @@ from models.tcn import NonCausalTemporalConvolutionalNetwork
 
 class BeatNet(nn.Module):
     """
-    PyTorch implementation of BeatNet CNN, using mel-spectrogram input,
-    learning an intermediate convolutional representation, before using a
-    non-causal Temporal Convolutional Network to predict a beat activation
-    vector.
+    PyTorch implementation of a BeatNet CNN. The network takes a
+    mel-spectrogram input. It then learns an intermediate convolutional
+    representation, and finally applies a non-causal Temporal Convolutional
+    Network to predict a beat activation vector.
+
+    The structure of this network is based on the model proposed in Davies &
+    Bock 2019.
     """
 
     def __init__(
