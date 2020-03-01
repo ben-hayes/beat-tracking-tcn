@@ -83,6 +83,8 @@ def recall(prediction, target, tolerance=0.07):
                 pred_beats.remove(predicted_beat)
                 break
 
+    return num_correct / (num_correct + false_negatives)
+
 
 def f_measure(prediction, target, tolerance=0.07):
     """
