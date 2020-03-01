@@ -12,6 +12,7 @@ Descrption: Train a BeatNet model on a given dataset.
 from torch.utils.data import random_split, DataLoader
 from torch.nn import BCELoss
 from torch.optim import Adam, lr_scheduler
+from torch import device
 
 from argparse import ArgumentParser
 
@@ -60,6 +61,12 @@ def parse_args():
         type=int,
         default=1,
         help="Batch size to use for training.")
+    parser.add_argument(
+        "-c",
+        "--cuda_device",
+        type=int,
+        default=None,
+        help="CUDA device index for training. CPU used if none specified.")
 
     return parser.parse_args()
 
@@ -141,10 +148,17 @@ if __name__ == '__main__':
         make_data_loaders(
             (train_dataset, val_dataset, test_dataset),
             batch_size=args.batch_size)
+
     model = BeatNet()
+
+    cuda_device = device('cuda:%d' % cuda_device)\
+                  if args.cuda_device is not None else None
+    model = model.to(device=cuda_device)\
+            if args.cuda_device is not None else model
 
     train_loop(
         model,
         train_loader,
         val_loader=val_loader,
-        num_epochs=args.num_epochs)
+        num_epochs=args.num_epochs,
+        cuda_device=cuda_device)
