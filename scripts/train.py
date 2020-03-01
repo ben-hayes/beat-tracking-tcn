@@ -94,6 +94,12 @@ def make_data_loaders(datasets, batch_size=1, num_workers=8):
     return loaders
 
 
+def save_model(model, output_file):
+    state_dict = model.state_dict()
+    with open(output_file, 'wb') as f:
+        pickle.dump(state_dict, f)
+
+
 def train_loop(
         model,
         train_loader,
@@ -148,14 +154,34 @@ def train_loop(
             save_model(model, output_file)
 
 
-def save_model(model, output_file):
-    state_dict = model.state_dict()
-    with open(output_file, 'wb') as f:
-        pickle.dump(state_dict, f)
+def test_model(model, test_loader, cuda_device=None):
+    def test_callback(batch_report):
+        print("Test Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
+                batch_report["batch_index"],
+                batch_report["batch_loss"],
+                batch_report["running_epoch_loss"]), end="\r")
+    
+    criterion = BCELoss()
+
+    test_report = evaluate(
+        model,
+        criterion,
+        test_loader,
+        batch_callback=test_callback,
+        cuda_device=cuda_device)
+    
+    print("Test Loss: %.5f                                                 " %
+          test_report["epoch_loss"])
 
 
 if __name__ == '__main__':
     args = parse_args()
+
+    if args.validation_split == 0.0 and args.davies_stopping_condition:
+        print("Validation split must be greater than zero in order to use "
+              + "Davies stopping condition.")
+        quit()
+
     dataset = load_dataset(args.spectrogram_dir, args.label_dir)
     train_dataset, val_dataset, test_dataset =\
         split_dataset(dataset, args.validation_split, args.test_split)
@@ -178,3 +204,5 @@ if __name__ == '__main__':
         num_epochs=args.num_epochs,
         cuda_device=cuda_device,
         output_file=args.output_file)
+    
+    test_model(model, test_loader, cuda_device=cuda_device)
