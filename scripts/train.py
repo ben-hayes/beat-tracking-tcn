@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     model = BeatNet()
 
-    cuda_device = device('cuda:%d' % cuda_device)\
+    cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
     model = model.to(device=cuda_device)\
             if args.cuda_device is not None else model
