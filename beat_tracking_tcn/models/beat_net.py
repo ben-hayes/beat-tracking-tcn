@@ -12,7 +12,7 @@ Description: A CNN including a Temporal Convolutional Layer designed to predict
 """
 import torch.nn as nn
 
-from models.tcn import NonCausalTemporalConvolutionalNetwork
+from beat_tracking_tcn.models.tcn import NonCausalTemporalConvolutionalNetwork
 
 
 class BeatNet(nn.Module):

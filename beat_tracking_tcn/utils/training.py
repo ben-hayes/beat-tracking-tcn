@@ -144,12 +144,12 @@ def evaluate(
     running_evaluations = {
         func: running_evaluations[func] / (i + 1)
         for func in running_evaluations
-    }
+    } if evaluation_functions is not None else None
 
     return {
         "total_batches": i + 1,
         "epoch_loss": running_loss / (i + 1),
-        "running_evaluations": running_evaluations
+        "running_evaluations": running_evaluations 
     }
 
 
