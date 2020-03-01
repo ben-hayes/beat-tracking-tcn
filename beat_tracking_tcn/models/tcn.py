@@ -158,6 +158,8 @@ class NonCausalTemporalConvolutionalNetwork(nn.Module):
                     dropout=dropout
                 )
             )
+        
+        self.net = nn.Sequential(*self.layers)
 
     def forward(self, x):
         """
@@ -171,9 +173,5 @@ class NonCausalTemporalConvolutionalNetwork(nn.Module):
             torch.Tensor -- A PyTorch tensor of size determined by the final
                             temporal convolutional layer.
         """
-        y = x
-
-        for layer in self.layers:
-            y = layer(y)
-
+        y = self.net(x)
         return y

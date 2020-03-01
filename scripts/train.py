@@ -155,8 +155,9 @@ if __name__ == '__main__':
 
     cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
-    model = BeatNet().to(device=cuda_device)\
-            if cuda_device is not None else BeatNet()
+    model = BeatNet()
+    if cuda_device is not None:
+        model.cuda(args.cuda_device)
 
     train_loop(
         model,
