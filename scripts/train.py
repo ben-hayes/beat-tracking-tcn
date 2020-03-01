@@ -152,12 +152,11 @@ if __name__ == '__main__':
             (train_dataset, val_dataset, test_dataset),
             batch_size=args.batch_size)
 
-    model = BeatNet()
 
     cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
-    model = model.to(device=cuda_device)\
-            if args.cuda_device is not None else model
+    model = BeatNet().to(device=cuda_device)\
+            if cuda_device is not None else BeatNet()
 
     train_loop(
         model,
