@@ -97,7 +97,8 @@ def train_loop(
         train_loader,
         val_loader=None,
         num_epochs=100,
-        learning_rate=0.001):
+        learning_rate=0.001,
+        cuda_device=None):
     
     def train_callback(batch_report):
         print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
@@ -121,14 +122,16 @@ def train_loop(
             criterion,
             optimiser,
             train_loader,
-            batch_callback=train_callback)
+            batch_callback=train_callback,
+            cuda_device=cuda_device)
 
         if val_loader is not None:
             val_report = evaluate(
                 model,
                 criterion,
                 val_loader,
-                batch_callback=val_callback)
+                batch_callback=val_callback,
+                cuda_device=cuda_device)
 
             scheduler.step(val_report["epoch_loss"])
 
