@@ -9,12 +9,13 @@ File: scripts/train.py
 
 Descrption: Train a BeatNet model on a given dataset.
 """
+from argparse import ArgumentParser
+import pickle
+
 from torch.utils.data import random_split, DataLoader
 from torch.nn import BCELoss
 from torch.optim import Adam, lr_scheduler
 from torch import device
-
-from argparse import ArgumentParser
 
 from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
@@ -30,6 +31,7 @@ def parse_args():
     parser.add_argument(
         "-o",
         "--output_file",
+        default=None,
         type=str,
         help="Where to save trained model.")
     parser.add_argument(
@@ -98,7 +100,8 @@ def train_loop(
         val_loader=None,
         num_epochs=100,
         learning_rate=0.001,
-        cuda_device=None):
+        cuda_device=None,
+        output_file=None):
     
     def train_callback(batch_report):
         print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
@@ -140,6 +143,15 @@ def train_loop(
         else:
             print("Epoch #%d; Loss: %.3f                                   " %
                 (epoch, epoch_report["epoch_loss"]))
+        
+        if output_file is not None:
+            save_model(model, output_file)
+
+
+def save_model(model, output_file):
+    state_dict = model.state_dict()
+    with open(output_file, 'wb') as f:
+        pickle.dump(state_dict, f)
 
 
 if __name__ == '__main__':
@@ -164,4 +176,5 @@ if __name__ == '__main__':
         train_loader,
         val_loader=val_loader,
         num_epochs=args.num_epochs,
-        cuda_device=cuda_device)
+        cuda_device=cuda_device,
+        output_file=args.output_file)
