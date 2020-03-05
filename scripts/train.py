@@ -117,21 +117,39 @@ def train_loop(
         learning_rate=0.001,
         cuda_device=None,
         output_file=None,
-        davies_stopping_condition=False):
+        davies_stopping_condition=False,
+        fold=None):
     
     def train_callback(batch_report):
         if batch_report["batch_index"] % 10 == 9:
-            print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
-                    batch_report["batch_index"],
-                    batch_report["batch_loss"],
-                    batch_report["running_epoch_loss"]), end="\r")
+            if fold is None:
+                print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
+                        batch_report["batch_index"],
+                        batch_report["batch_loss"],
+                        batch_report["running_epoch_loss"]), end="\r")
+            else:
+                print("Fold %d; Training Batch %d; "
+                    + "Loss: %.3f; Epoch Loss: %.3f" % (
+                        fold,
+                        batch_report["batch_index"],
+                        batch_report["batch_loss"],
+                        batch_report["running_epoch_loss"]), end="\r")
     
     def val_callback(batch_report):
         if batch_report["batch_index"] % 10 == 9:
-            print("Validation Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
-                    batch_report["batch_index"],
-                    batch_report["batch_loss"],
-                    batch_report["running_epoch_loss"]), end="\r")
+            if fold is None:
+                print("Fold: %d; Validation Batch %d; "
+                    + "Loss: %.3f; Epoch Loss: %.3f" % (
+                        batch_report["batch_index"],
+                        batch_report["batch_loss"],
+                        batch_report["running_epoch_loss"]), end="\r")
+            else:
+                print("Fold: %d; Validation Batch %d;"
+                    + " Loss: %.3f; Epoch Loss: %.3f" % (
+                        fold,
+                        batch_report["batch_index"],
+                        batch_report["batch_loss"],
+                        batch_report["running_epoch_loss"]), end="\r")
 
     val_loss_history = []
     
@@ -160,8 +178,19 @@ def train_loop(
 
             val_loss_history.append(val_report["epoch_loss"])
 
-            print("Epoch #%d; Loss: %.3f; Val Loss: %.3f                   " %
-                (epoch, epoch_report["epoch_loss"], val_report["epoch_loss"]))
+            if fold is None:
+                print("Epoch #%d; Loss: %.3f;"
+                    + " Val Loss: %.3f                   " % (
+                        epoch,
+                        epoch_report["epoch_loss"],
+                        val_report["epoch_loss"]))
+            else:
+                print("Fold: #%d; Epoch #%d; Loss: %.3f;"
+                    + " Val Loss: %.3f                   " % (
+                        fold,
+                        epoch,
+                        epoch_report["epoch_loss"],
+                        val_report["epoch_loss"]))
             
             if davies_stopping_condition:
                 if loss_stopped_falling(
@@ -170,8 +199,15 @@ def train_loop(
                 and len(val_loss_history) > DAVIES_CONDITION_EPOCHS:
                     break
         else:
-            print("Epoch #%d; Loss: %.3f                                   " %
-                (epoch, epoch_report["epoch_loss"]))
+            if fold is None:
+                print("Epoch #%d; Loss: %.3f"
+                    + "                                    " %
+                    (epoch, epoch_report["epoch_loss"]))
+            else:
+                print("Fold: #%d; Epoch #%d; Loss: %.3f"
+                    + "                                    " %
+                    (fold, epoch, epoch_report["epoch_loss"]))
+
         
         if output_file is not None:
             save_model(model, output_file)
