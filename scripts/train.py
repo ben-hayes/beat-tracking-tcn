@@ -120,16 +120,18 @@ def train_loop(
         davies_stopping_condition=False):
     
     def train_callback(batch_report):
-        print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
-                batch_report["batch_index"],
-                batch_report["batch_loss"],
-                batch_report["running_epoch_loss"]), end="\r")
+        if batch_report["batch_index"] % 10 == 9:
+            print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
+                    batch_report["batch_index"],
+                    batch_report["batch_loss"],
+                    batch_report["running_epoch_loss"]), end="\r")
     
     def val_callback(batch_report):
-        print("Validation Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
-                batch_report["batch_index"],
-                batch_report["batch_loss"],
-                batch_report["running_epoch_loss"]), end="\r")
+        if batch_report["batch_index"] % 10 == 9:
+            print("Validation Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
+                    batch_report["batch_index"],
+                    batch_report["batch_loss"],
+                    batch_report["running_epoch_loss"]), end="\r")
 
     val_loss_history = []
     
