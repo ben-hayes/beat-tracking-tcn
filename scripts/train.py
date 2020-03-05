@@ -12,6 +12,7 @@ Descrption: Train a BeatNet model on a given dataset.
 from argparse import ArgumentParser
 import pickle
 
+import numpy as np
 from torch.utils.data import random_split, DataLoader
 from torch.nn import BCELoss
 from torch.optim import Adam, lr_scheduler
@@ -20,6 +21,10 @@ from torch import device
 from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.training import train, evaluate
+
+
+STOPPING_THRESHOLD = 0.001
+DAVIES_CONDITION_EPOCHS = 50
 
 
 def parse_args():
@@ -100,6 +105,10 @@ def save_model(model, output_file):
         pickle.dump(state_dict, f)
 
 
+def loss_stopped_falling(loss_history, epochs):
+    return np.sum(np.diff(loss_history[-epochs:])) < STOPPING_THRESHOLD
+
+
 def train_loop(
         model,
         train_loader,
@@ -107,7 +116,8 @@ def train_loop(
         num_epochs=100,
         learning_rate=0.001,
         cuda_device=None,
-        output_file=None):
+        output_file=None,
+        davies_stopping_condition=False):
     
     def train_callback(batch_report):
         print("Training Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
@@ -120,6 +130,8 @@ def train_loop(
                 batch_report["batch_index"],
                 batch_report["batch_loss"],
                 batch_report["running_epoch_loss"]), end="\r")
+
+    val_loss_history = []
     
     criterion = BCELoss()
     optimiser = Adam(model.parameters(), lr=learning_rate)
@@ -144,14 +156,24 @@ def train_loop(
 
             scheduler.step(val_report["epoch_loss"])
 
+            val_loss_history.append(val_report["epoch_loss"])
+
             print("Epoch #%d; Loss: %.3f; Val Loss: %.3f                   " %
                 (epoch, epoch_report["epoch_loss"], val_report["epoch_loss"]))
+            
+            if davies_stopping_condition:
+                if loss_stopped_falling(
+                        val_loss_history,
+                        DAVIES_CONDITION_EPOCHS):
+                    break
         else:
             print("Epoch #%d; Loss: %.3f                                   " %
                 (epoch, epoch_report["epoch_loss"]))
         
         if output_file is not None:
             save_model(model, output_file)
+
+    return model
 
 
 def test_model(model, test_loader, cuda_device=None):
@@ -203,6 +225,10 @@ if __name__ == '__main__':
         val_loader=val_loader,
         num_epochs=args.num_epochs,
         cuda_device=cuda_device,
-        output_file=args.output_file)
+        output_file=args.output_file,
+        davies_stopping_condition=args.davies_stopping_condition)
+    
+    if args.output_file is not None:
+        save_model(model, args.output_file)
     
     test_model(model, test_loader, cuda_device=cuda_device)
