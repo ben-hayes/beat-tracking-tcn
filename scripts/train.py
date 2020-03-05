@@ -106,7 +106,7 @@ def save_model(model, output_file):
 
 
 def loss_stopped_falling(loss_history, epochs):
-    return np.sum(np.diff(loss_history[-epochs:])) < - STOPPING_THRESHOLD
+    return - np.sum(np.diff(loss_history[-epochs:])) < STOPPING_THRESHOLD
 
 
 def train_loop(
