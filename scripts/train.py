@@ -164,7 +164,8 @@ def train_loop(
             if davies_stopping_condition:
                 if loss_stopped_falling(
                         val_loss_history,
-                        DAVIES_CONDITION_EPOCHS):
+                        DAVIES_CONDITION_EPOCHS)\
+                and len(val_loss_history) > DAVIES_CONDITION_EPOCHS:
                     break
         else:
             print("Epoch #%d; Loss: %.3f                                   " %
