@@ -128,7 +128,8 @@ if __name__ == "__main__":
             num_epochs=args.num_epochs,
             cuda_device=cuda_device,
             output_file=args.output_file,
-            davies_stopping_condition=args.davies_stopping_condition)
+            davies_stopping_condition=args.davies_stopping_condition,
+            fold=k)
 
         if args.output_file is not None:
             save_model(model, args.output_file)
