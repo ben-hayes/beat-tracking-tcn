@@ -68,6 +68,12 @@ def parse_args():
         type=int,
         default=None,
         help="CUDA device index for training. CPU used if none specified.")
+    parser.add_argument(
+        "-d",
+        "--dataset_output_file",
+        type=str,
+        default=None,
+        help="Save directory for datasets to allow for consistent evaluation")
 
     return parser.parse_args()
 
@@ -99,6 +105,10 @@ def make_fold_output_name(base_name, fold):
     filename, ext = os.path.splitext(base_name)
     new_name = "%s.fold%.3d%s" % (filename, fold, ext)
     return new_name
+
+def save_datasets(datasets, file):
+    with open(file, 'wb') as f:
+        pickle.dump(datasets, f)
 
 
 if __name__ == "__main__":
@@ -133,5 +143,9 @@ if __name__ == "__main__":
 
         if args.output_file is not None:
             save_model(model, output_file)
+        
+        if args.dataset_output_file is not None:
+            save_dir = make_fold_output_name(args.dataset_output_file, k)
+            save_datasets((train, val, test), save_dir)
 
         test_model(model, test_loader, cuda_device=cuda_device)
