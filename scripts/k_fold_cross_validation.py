@@ -13,6 +13,7 @@ Descrption: Train several BeatNet models on different folds of the dataset
 from argparse import ArgumentParser
 import math
 import os
+import pickle
 
 from torch import device
 from torch.utils.data import random_split, ConcatDataset
