@@ -1,0 +1,16 @@
+audioread==2.1.8
+-e git+git@github.com:ben-hayes/beat-tracking-tcn.git@e24435d6ecc3d74ff33b517719a4fc549cd8356d#egg=beat_tracking_tcn
+cffi==1.14.0
+decorator==4.4.2
+joblib==0.14.1
+librosa==0.7.2
+llvmlite==0.31.0
+numba==0.48.0
+numpy==1.18.1
+pycparser==2.20
+resampy==0.2.2
+scikit-learn==0.22.2.post1
+scipy==1.4.1
+six==1.14.0
+SoundFile==0.10.3.post1
+torch==1.4.0
