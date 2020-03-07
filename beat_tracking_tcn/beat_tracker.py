@@ -38,9 +38,7 @@ dbn = DBNBeatTrackingProcessor(
     online=True)
 
 
-
-
-def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
+def beat_activations_from_spectrogram(spectrogram, checkpoint_file=None):
     if checkpoint_file is not None:
         load_checkpoint(model, checkpoint_file)
     else:
@@ -57,9 +55,12 @@ def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
         
         beat_activations = model(spectrogram_tensor).numpy()
 
-        dbn.reset()
-        predicted_beats = dbn.process_offline(beat_activations.squeeze())
-        return predicted_beats
+def predict_beats_from_spectrogram(spectrogram, checkpoint_file=None):
+    beat_activations =\
+        beat_activations_from_spectrogram(spectrogram, checkpoint_file)
+    dbn.reset()
+    predicted_beats = dbn.process_offline(beat_activations.squeeze())
+    return predicted_beats
 
 
 def beatTracker(input_file, checkpoint_file=None):
@@ -71,4 +72,4 @@ def beatTracker(input_file, checkpoint_file=None):
             N_MELS),
         TRIM_SIZE)
     
-    return track_beats_from_spectrogram(mag_spectrogram, checkpoint_file)
+    return predict_beats_from_spectrogram(mag_spectrogram, checkpoint_file)
