@@ -51,12 +51,12 @@ if __name__ == '__main__':
         with open(model_checkpoint, 'rb') as f:
             state_dict = pickle.load(f)
 
-        test_loader = DataLoader(test, batch_size=1, num_workers=8)
-
         model = BeatNet()
         model.load_state_dict(state_dict)
         model.eval()
 
-        for i, batch in enumerate(test_loader):
-            outputs, loss = forward_batch(model, criterion, batch)
-            print(loss)
+        for i in range(len(test)):
+            spectrogram = test[i]["spectrogram"]
+            beat_function = model(spectrogram)
+            ground_truth = test.dataset.get_ground_truth(i)
+            print(ground_truth)
