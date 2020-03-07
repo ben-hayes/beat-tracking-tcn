@@ -39,11 +39,13 @@ if __name__ == '__main__':
 
     ds_root, ext = os.path.splitext(args.saved_k_fold_dataset)
     ds_root = os.path.splitext(ds_root)[0]
-
+    print(" Fold# | f-Measure | Other stuff ...")
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
             _, _, test = torch.load(f)
+        
+        running_f_measure = 0.0
 
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
@@ -52,5 +54,9 @@ if __name__ == '__main__':
 
             prediction =\
                 predict_beats_from_spectrogram(spectrogram, model_checkpoint)
-            
-            print(f_measure(ground_truth, prediction))
+
+            f = f_measure(ground_truth, prediction)
+            running_f_measure += f        
+            print(" #%.4d |  %.5f  | Other stuff ..." % (k, running_f_measure / (i + 1)), end="\r")
+
+        print(" #%.4d |  %.5f  | Other stuff ..." % (k, running_f_measure / (i + 1)))
