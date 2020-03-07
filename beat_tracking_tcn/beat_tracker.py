@@ -53,7 +53,7 @@ def beat_activations_from_spectrogram(spectrogram, checkpoint_file=None):
         else:
             spectrogram_tensor = spectrogram
         
-        return model(spectrogram_tensor.t()).numpy()
+        return model(spectrogram_tensor).numpy()
 
 def predict_beats_from_spectrogram(spectrogram, checkpoint_file=None):
     beat_activations =\
@@ -70,6 +70,6 @@ def beatTracker(input_file, checkpoint_file=None):
             FFT_SIZE,
             HOP_LENGTH_IN_SECONDS,
             N_MELS),
-        TRIM_SIZE)
+        TRIM_SIZE).T
     
     return predict_beats_from_spectrogram(mag_spectrogram, checkpoint_file)
