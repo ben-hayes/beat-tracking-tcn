@@ -28,8 +28,6 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
 
 
 model = BeatNet()
-load_checkpoint(model, DEFAULT_CHECKPOINT_PATH)
-default_checkpoint_loaded = True
 model.eval()
 
 dbn = DBNBeatTrackingProcessor(
@@ -45,10 +43,8 @@ dbn = DBNBeatTrackingProcessor(
 def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
     if checkpoint_file is not None:
         load_checkpoint(model, checkpoint_file)
-        default_checkpoint_loaded = False
-    elif not default_checkpoint_loaded:
+    else:
         load_checkpoint(model, DEFAULT_CHECKPOINT_PATH)
-        default_checkpoint_loaded = True
 
     with torch.no_grad():
         if type(spectrogram) is not torch.Tensor:
