@@ -19,6 +19,7 @@ import os
 import pickle
 
 from mir_eval.beat import f_measure
+import torch
 
 from beat_tracking_tcn.beat_tracker import beatTracker,\
                                            track_beats_from_spectrogram
