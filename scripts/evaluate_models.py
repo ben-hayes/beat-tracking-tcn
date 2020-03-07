@@ -18,7 +18,8 @@ from argparse import ArgumentParser
 import os
 import pickle
 
-from mir_eval.beat import f_measure
+from mir_eval.beat import f_measure, cemgil, goto
+import numpy as np
 import torch
 
 from beat_tracking_tcn.beat_tracker import beatTracker,\
@@ -39,13 +40,20 @@ if __name__ == '__main__':
 
     ds_root, ext = os.path.splitext(args.saved_k_fold_dataset)
     ds_root = os.path.splitext(ds_root)[0]
-    print(" Fold# | f-Measure | Other stuff ...")
+    print(" Fold# | f-Measure | Cemgil Ac | GotoScore | ")
+    scores = {
+        "f_measure": [],
+        "cemgill": [],
+        "goto": []
+    }
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
             _, _, test = torch.load(f)
         
         running_f_measure = 0.0
+        running_cemgil = 0.0
+        running_goto = 0.0
 
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
@@ -56,7 +64,30 @@ if __name__ == '__main__':
                 predict_beats_from_spectrogram(spectrogram, model_checkpoint)
 
             f = f_measure(ground_truth, prediction)
+            cg, _ = cemgil(ground_truth, prediction)
+            gt = goto(ground_truth, prediction)
             running_f_measure += f        
-            print(" #%.4d |  %.5f  | Other stuff ..." % (k, running_f_measure / (i + 1)), end="\r")
+            running_cemgil += cg
+            running_goto += gt
+            print(" #%.4d |  %.5f  |  %.5f  |  %.5f  | Other stuff ..." % (
+                k,
+                running_f_measure / (i + 1),
+                running_cemgil / (i + 1),
+                running_goto / (i + 1)
+            ), end="\r")
 
-        print(" #%.4d |  %.5f  | Other stuff ..." % (k, running_f_measure / (i + 1)))
+        mean_f_score = running_f_measure / (i + 1)
+        mean_cemgil = running_cemgil / (i + 1)
+        mean_goto = running_goto / (i + 1)
+        print(" #%.4d |  %.5f  |  %.5f  |  %.5f  | Other stuff ..." % (
+            k,
+            mean_f_score,
+            mean_cemgil,
+            mean_goto))
+
+        scores["f_measure"].append(mean_f_score)
+        scores["cemgil"].append(mean_cemgil)
+        scores["goto"].append(mean_goto)
+    print("Mean f-score: %.5f" % (np.mean(scores["f_measure"])))
+    print("Mean Cemgil: %.5f" % (np.mean(scores["cemgil"])))
+    print("Mean Goto: %.5f" % (np.mean(scores["goto"])))
