@@ -15,6 +15,8 @@ import numpy as np
 import os
 from argparse import ArgumentParser
 
+from beat_tracking_tcn.utils.spectrograms import create_spectrograms
+
 
 def parse_args():
     """Parse command line arguments using argparse module"""
@@ -54,31 +56,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-
-def create_spectrograms(
-        audio_dir,
-        spectrogram_dir,
-        n_fft,
-        hop_length_in_seconds,
-        n_mels):
-
-    for file in os.scandir(audio_dir):
-        if os.path.splitext(file.name)[1] != '.wav':
-            continue
-
-        x, sr = librosa.load(file.path)
-        hop_length_in_samples = int(np.floor(hop_length_in_seconds * sr))
-        spec = librosa.feature.melspectrogram(
-            x,
-            sr=sr,
-            n_fft=n_fft,
-            hop_length=hop_length_in_samples,
-            n_mels=n_mels)
-        mag_spec = np.abs(spec)
-        np.save(os.path.join(spectrogram_dir,
-                             os.path.splitext(file.name)[0]), mag_spec)
-        print('Saved spectrum for {}'.format(file.name))
 
 
 if __name__ == '__main__':
