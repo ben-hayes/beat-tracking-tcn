@@ -21,7 +21,6 @@ from torch import device
 from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.training import train, evaluate
-from k_fold_cross_validation import save_datasets
 
 
 STOPPING_THRESHOLD = 0.001
@@ -110,6 +109,11 @@ def save_model(model, output_file):
     state_dict = model.state_dict()
     with open(output_file, 'wb') as f:
         pickle.dump(state_dict, f)
+
+
+def save_datasets(datasets, file):
+    with open(file, 'wb') as f:
+        pickle.dump(datasets, f)
 
 
 def loss_stopped_falling(loss_history, epochs):
