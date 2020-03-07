@@ -21,6 +21,11 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
         'checkpoints/default_checkpoint.torch')
 
 
+def load_checkpoint(model, checkpoint_file):
+    model.load_state_dict(
+        torch.load(checkpoint_file, map_location=torch.device('cpu')))
+
+
 model = BeatNet()
 load_checkpoint(model, DEFAULT_CHECKPOINT_PATH)
 default_checkpoint_loaded = True
@@ -34,9 +39,6 @@ dbn = DBNBeatTrackingProcessor(
     online=True)
 
 
-def load_checkpoint(model, checkpoint_file):
-    model.load_state_dict(
-        torch.load(checkpoint_file, map_location=torch.device('cpu')))
 
 
 def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
