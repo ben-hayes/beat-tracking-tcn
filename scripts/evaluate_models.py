@@ -42,7 +42,7 @@ if __name__ == '__main__':
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
-            _, _, test = pickle.load(f)
+            _, _, test = torch.load(f)
 
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
