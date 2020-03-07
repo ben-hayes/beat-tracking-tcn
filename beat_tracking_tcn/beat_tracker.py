@@ -19,7 +19,7 @@ FFT_SIZE = 2048
 HOP_LENGTH_IN_SECONDS = 0.01
 HOP_LENGTH_IN_SAMPLES = 220
 N_MELS = 81
-TRIM_SIZE = (3000, 81)
+TRIM_SIZE = (81, 3000)
 SR = 22050
 
 DEFAULT_CHECKPOINT_PATH = os.path.join(
@@ -53,7 +53,7 @@ def beat_activations_from_spectrogram(spectrogram, checkpoint_file=None):
         else:
             spectrogram_tensor = spectrogram
         
-        return model(spectrogram_tensor).numpy()
+        return model(spectrogram_tensor.t()).numpy()
 
 def predict_beats_from_spectrogram(spectrogram, checkpoint_file=None):
     beat_activations =\
