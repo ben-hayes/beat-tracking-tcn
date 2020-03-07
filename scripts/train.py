@@ -21,6 +21,7 @@ from torch import device
 from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.training import train, evaluate
+from k_fold_cross_validation import save_datasets
 
 
 STOPPING_THRESHOLD = 0.001
@@ -74,6 +75,12 @@ def parse_args():
         type=int,
         default=None,
         help="CUDA device index for training. CPU used if none specified.")
+    parser.add_argument(
+        "-d",
+        "--dataset_output_file",
+        type=str,
+        default=None,
+        help="Save directory for datasets to allow for consistent evaluation")
 
     return parser.parse_args()
 
@@ -262,5 +269,10 @@ if __name__ == '__main__':
     
     if args.output_file is not None:
         save_model(model, args.output_file)
+
+    if args.dataset_output_file is not None:
+        save_datasets(
+            (train_dataset, val_dataset, test_dataset),
+            args.dataset_output_file)
     
     test_model(model, test_loader, cuda_device=cuda_device)
