@@ -144,7 +144,7 @@ def train_loop(
     def val_callback(batch_report):
         if batch_report["batch_index"] % 10 == 9:
             if fold is None:
-                print("Fold: %d; Validation Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
+                print("Validation Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
                         batch_report["batch_index"],
                         batch_report["batch_loss"],
                         batch_report["running_epoch_loss"]), end="\r")
