@@ -18,12 +18,10 @@ from argparse import ArgumentParser
 import os
 import pickle
 
-from torch.utils.data import DataLoader
-import torch.nn as nn
+from mir_eval.beat import f_measure
 
-from beat_tracking_tcn.models.beat_net import BeatNet
-from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
-from beat_tracking_tcn.utils.training import forward_batch
+from beat_tracking_tcn.beat_tracker import beatTracker,\
+                                           track_beats_from_spectrogram
 
 
 def parse_args():
@@ -41,22 +39,16 @@ if __name__ == '__main__':
     ds_root, ext = os.path.splitext(args.saved_k_fold_dataset)
     ds_root = os.path.splitext(ds_root)[0]
 
-    criterion = nn.BCELoss()
-
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
             _, _, test = pickle.load(f)
 
-        with open(model_checkpoint, 'rb') as f:
-            state_dict = pickle.load(f)
-
-        model = BeatNet()
-        model.load_state_dict(state_dict)
-        model.eval()
-
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
-            beat_function = model(spectrogram)
             ground_truth = test.dataset.get_ground_truth(i)
-            print(ground_truth)
+
+            prediction =\
+                track_beats_from_spectrogram(spectrogram, model_checkpoint)
+            
+            print(f_measure(ground_truth, prediction))

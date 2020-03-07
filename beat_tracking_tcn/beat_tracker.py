@@ -23,6 +23,7 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
 
 model = BeatNet()
 load_checkpoint(model, DEFAULT_CHECKPOINT_PATH)
+default_checkpoint_loaded = True
 model.eval()
 
 dbn = DBNBeatTrackingProcessor(
@@ -38,7 +39,14 @@ def load_checkpoint(model, checkpoint_file):
         torch.load(checkpoint_file, map_location=torch.device('cpu')))
 
 
-def track_beats_from_spectrogram(spectrogram):
+def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
+    if checkpoint_file is not None:
+        load_checkpoint(model, checkpoint_file)
+        default_checkpoint_loaded = False
+    elif not default_checkpoint_loaded:
+        load_checkpoint(model, DEFAULT_CHECKPOINT_PATH)
+        default_checkpoint_loaded = True
+
     with torch.no_grad():
         spectrogram_tensor = torch.from_numpy(spectrogram)\
                                 .unsqueeze(0)\
@@ -52,9 +60,6 @@ def track_beats_from_spectrogram(spectrogram):
 
 
 def beatTracker(input_file, checkpoint_file=None):
-    if checkpoint_file is not None:
-        load_checkpoint(model, checkpoint_file)
-    
     mag_spectrogram = trim_spectrogram(
         create_spectrogram(
             input_file,
@@ -63,4 +68,4 @@ def beatTracker(input_file, checkpoint_file=None):
             N_MELS),
         TRIM_SIZE)
     
-    return track_beats_from_spectrogram(mag_spectrogram)
+    return track_beats_from_spectrogram(mag_spectrogram, checkpoint_file)
