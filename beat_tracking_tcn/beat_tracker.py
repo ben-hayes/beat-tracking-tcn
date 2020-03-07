@@ -51,10 +51,14 @@ def track_beats_from_spectrogram(spectrogram, checkpoint_file=None):
         default_checkpoint_loaded = True
 
     with torch.no_grad():
-        spectrogram_tensor = torch.from_numpy(spectrogram)\
-                                .unsqueeze(0)\
-                                .unsqueeze(0)\
-                                .float()
+        if type(spectrogram) is not torch.Tensor:
+            spectrogram_tensor = torch.from_numpy(spectrogram)\
+                                    .unsqueeze(0)\
+                                    .unsqueeze(0)\
+                                    .float()
+        else:
+            spectrogram_tensor = spectrogram
+        
         beat_activations = model(spectrogram_tensor).numpy()
 
         dbn.reset()
