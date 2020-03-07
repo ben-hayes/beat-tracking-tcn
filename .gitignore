@@ -134,3 +134,6 @@ data/*
 # Mac Nonsense
 .DS_Store
 .vscode/
+
+models
+k_fold_datasets
