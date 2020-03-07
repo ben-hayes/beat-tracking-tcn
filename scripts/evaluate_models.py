@@ -22,7 +22,7 @@ from mir_eval.beat import f_measure
 import torch
 
 from beat_tracking_tcn.beat_tracker import beatTracker,\
-                                           track_beats_from_spectrogram
+                                           predict_beats_from_spectrogram
 
 
 def parse_args():
@@ -50,6 +50,6 @@ if __name__ == '__main__':
             ground_truth = test.dataset.get_ground_truth(i)
 
             prediction =\
-                track_beats_from_spectrogram(spectrogram, model_checkpoint)
+                predict_beats_from_spectrogram(spectrogram, model_checkpoint)
             
             print(f_measure(ground_truth, prediction))
