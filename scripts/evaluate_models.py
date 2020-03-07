@@ -47,7 +47,8 @@ if __name__ == '__main__':
 
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
-            ground_truth = test.dataset.get_ground_truth(i)
+            parent_index = test.indices[i]
+            ground_truth = test.dataset.get_ground_truth(parent_index)
 
             prediction =\
                 predict_beats_from_spectrogram(spectrogram, model_checkpoint)
