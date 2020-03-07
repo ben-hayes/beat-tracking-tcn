@@ -9,6 +9,12 @@ from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.spectrograms import create_spectrogram,\
                                                  trim_spectrogram
 
+
+def load_checkpoint(model, checkpoint_file):
+    model.load_state_dict(
+        torch.load(checkpoint_file, map_location=torch.device('cpu')))
+
+
 FFT_SIZE = 2048
 HOP_LENGTH_IN_SECONDS = 0.01
 HOP_LENGTH_IN_SAMPLES = 220
@@ -19,11 +25,6 @@ SR = 22050
 DEFAULT_CHECKPOINT_PATH = os.path.join(
         os.path.dirname(__file__),
         'checkpoints/default_checkpoint.torch')
-
-
-def load_checkpoint(model, checkpoint_file):
-    model.load_state_dict(
-        torch.load(checkpoint_file, map_location=torch.device('cpu')))
 
 
 model = BeatNet()
