@@ -44,7 +44,7 @@ if __name__ == '__main__':
     criterion = nn.BCELoss()
 
     for k, model_checkpoint in enumerate(args.model_checkpoints):
-        dataset_file = "%s.%.3d%s" % (ds_root, k, ext)
+        dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
             _, _, test = pickle.load(f)
 
