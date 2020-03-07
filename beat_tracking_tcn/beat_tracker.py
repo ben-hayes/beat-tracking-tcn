@@ -53,7 +53,7 @@ def beat_activations_from_spectrogram(spectrogram, checkpoint_file=None):
         else:
             spectrogram_tensor = spectrogram
         
-        beat_activations = model(spectrogram_tensor).numpy()
+        return model(spectrogram_tensor).numpy()
 
 def predict_beats_from_spectrogram(spectrogram, checkpoint_file=None):
     beat_activations =\
