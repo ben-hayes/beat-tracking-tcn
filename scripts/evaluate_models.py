@@ -56,7 +56,7 @@ if __name__ == '__main__':
         model.eval()
 
         for i in range(len(test)):
-            spectrogram = test[i]["spectrogram"]
+            spectrogram = test[i]["spectrogram"].unsqueeze(0)
             beat_function = model(spectrogram)
             ground_truth = test.dataset.get_ground_truth(i)
             print(ground_truth)
