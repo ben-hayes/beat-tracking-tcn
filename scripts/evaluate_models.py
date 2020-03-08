@@ -65,7 +65,7 @@ if __name__ == '__main__':
                 
                 running_scores[metric] += scores[metric]
 
-            if k == 0:
+            if k == 0 and i == 0:
                 line = " Fold# |"
                 for metric in scores:
                     line += " %s |" % metric
