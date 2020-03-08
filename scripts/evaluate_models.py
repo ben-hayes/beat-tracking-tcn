@@ -49,14 +49,13 @@ if __name__ == '__main__':
                     words[i] = words[i][0] + words[i][1:].replace(vowel, "")
             return "".join(words)
 
-        if i == 0:
+        if i == 0 and k == 0:
             line = " Fold |"
             for metric in running_scores:
                 metric_heading = make_metric_heading(metric)
                 heading = " %s " % metric_heading
                 if len(metric_heading) < 6:
                     padding_length = int((6 - len(metric_heading)) / 2)
-                    print(padding_length)
                     padding = " " * padding_length
                     heading = padding + heading + padding
                     if len(metric_heading) % 2 == 1:
@@ -77,6 +76,7 @@ if __name__ == '__main__':
     ds_root, ext = os.path.splitext(args.saved_k_fold_dataset)
     ds_root = os.path.splitext(ds_root)[0]
     score_history = {}
+    downbeat_score_history = {}
 
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
@@ -91,20 +91,29 @@ if __name__ == '__main__':
                 [test.dataset.get_ground_truth(test.indices[i], downbeats=True)
                     for i in range(len(test))]))
         else:
-            ground_truths = (test.dataset.get_ground_truth(test.indices[i])
-                for i in range(len(test)))
+            ground_truths = [test.dataset.get_ground_truth(test.indices[i])
+                for i in range(len(test))]
 
-        scores = evaluate_model_on_dataset(
+        evaluation = evaluate_model_on_dataset(
             model_checkpoint,
             test,
             ground_truths,
             args.downbeats,
             partial(print_callback, k))
         
+        scores = evaluation["scores"]
+        db_scores = evaluation["db_scores"] 
+
         for metric in scores:
             if metric not in score_history:
                 score_history[metric] = []
             score_history[metric].append(scores[metric])
+        
+        if args.downbeats:
+            for metric in db_scores:
+                if metric not in downbeat_score_history:
+                    downbeat_score_history[metric] = []
+                downbeat_score_history[metric].append(scores[metric])
 
     line = "  Mean |" 
     for metric in score_history:
@@ -113,3 +122,12 @@ if __name__ == '__main__':
             max(4, number_length),
             np.mean(score_history[metric]))
     print(line)
+
+    if args.downbeats:
+        line = "  DbMn |" 
+        for metric in downbeat_score_history:
+            number_length = len(metric) - 2
+            line += " {1:.{0}f} |".format(
+                max(4, number_length),
+                np.mean(downbeat_score_history[metric]))
+        print(line)
