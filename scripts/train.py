@@ -10,13 +10,12 @@ File: scripts/train.py
 Descrption: Train a BeatNet model on a given dataset.
 """
 from argparse import ArgumentParser
-import pickle
 
 import numpy as np
 from torch.utils.data import random_split, DataLoader
 from torch.nn import BCELoss
 from torch.optim import Adam, lr_scheduler
-from torch import device
+from torch import device, save
 
 from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
@@ -112,12 +111,12 @@ def make_data_loaders(datasets, batch_size=1, num_workers=8):
 def save_model(model, output_file):
     state_dict = model.state_dict()
     with open(output_file, 'wb') as f:
-        pickle.dump(state_dict, f)
+        save(state_dict, f)
 
 
 def save_datasets(datasets, file):
     with open(file, 'wb') as f:
-        pickle.dump(datasets, f)
+        save(datasets, f)
 
 
 def loss_stopped_falling(loss_history, epochs):
