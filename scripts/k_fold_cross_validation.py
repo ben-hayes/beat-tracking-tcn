@@ -75,6 +75,10 @@ def parse_args():
         type=str,
         default=None,
         help="Save directory for datasets to allow for consistent evaluation")
+    parser.add_argument(
+        "--downbeats",
+        action="store_true",
+        help="Trains a downbeat tracking model")
 
     return parser.parse_args()
 
@@ -114,7 +118,10 @@ def save_datasets(datasets, file):
 
 if __name__ == "__main__":
     args = parse_args()
-    dataset = load_dataset(args.spectrogram_dir, args.label_dir)
+    dataset = load_dataset(
+        args.spectrogram_dir,
+        args.label_dir,
+        args.downbeats)
     fold_sets = make_fold_datasets(dataset, args.num_folds)
 
     cuda_device = device('cuda:%d' % args.cuda_device)\
@@ -122,7 +129,7 @@ if __name__ == "__main__":
 
     for k, datasets in enumerate(iterate_folds(fold_sets)):
         train, val, test = datasets
-        model = BeatNet()
+        model = BeatNet(downbeats=args.downbeats)
         if cuda_device is not None:
             model.cuda(args.cuda_device)
 
