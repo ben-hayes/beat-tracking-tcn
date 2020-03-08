@@ -72,10 +72,10 @@ def evaluate_model_on_dataset(
     for metric in running_scores:
         mean_scores[metric] = running_scores[metric] / (i + 1)        
 
-        return {
-            "total_examples": i + 1,
-            "scores": mean_scores
-        }
+    return {
+        "total_examples": i + 1,
+        "scores": mean_scores
+    }
 
 if __name__ == "__main__":
     args = parse_args()
