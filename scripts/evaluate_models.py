@@ -114,7 +114,7 @@ if __name__ == '__main__':
             for metric in db_scores:
                 if metric not in downbeat_score_history:
                     downbeat_score_history[metric] = []
-                downbeat_score_history[metric].append(scores[metric])
+                downbeat_score_history[metric].append(db_scores[metric])
 
     line = "  Mean |" 
     for metric in score_history:
