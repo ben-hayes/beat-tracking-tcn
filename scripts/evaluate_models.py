@@ -102,7 +102,7 @@ if __name__ == '__main__':
             partial(print_callback, k))
         
         scores = evaluation["scores"]
-        db_scores = evaluation["db_scores"] 
+        db_scores = evaluation["downbeat_scores"] 
 
         for metric in scores:
             if metric not in score_history:
