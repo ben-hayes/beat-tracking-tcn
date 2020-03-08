@@ -69,6 +69,9 @@ class BallroomDataset(Dataset):
         raw_spec, raw_beats = self._load_spectrogram_and_labels(i)
         x, y = self._trim_spec_and_labels(raw_spec, raw_beats)
 
+        if self.downbeats:
+            y = y.T
+
         return {
             'spectrogram': torch.from_numpy(
                     np.expand_dims(x.T, axis=0)).float(),
