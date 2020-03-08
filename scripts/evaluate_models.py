@@ -100,7 +100,8 @@ if __name__ == '__main__':
             ground_truths,
             args.downbeats,
             partial(print_callback, k))
-        
+
+        print(" ")        
         scores = evaluation["scores"]
         db_scores = evaluation["downbeat_scores"] 
 
