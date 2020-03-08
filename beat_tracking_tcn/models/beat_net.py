@@ -32,7 +32,8 @@ class BeatNet(nn.Module):
             output=3000,
             channels=16,
             tcn_kernel_size=5,
-            dropout=0.1):
+            dropout=0.1,
+            downbeats=False):
         """
         Construct an instance of BeatNet.
 
@@ -67,7 +68,7 @@ class BeatNet(nn.Module):
             tcn_kernel_size,
             dropout)
 
-        self.out = nn.Conv1d(16, 1, 1)
+        self.out = nn.Conv1d(16, 1 if not downbeats else 2, 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):

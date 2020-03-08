@@ -80,12 +80,16 @@ def parse_args():
         type=str,
         default=None,
         help="Save directory for datasets to allow for consistent evaluation")
+    parser.add_argument(
+        "--downbeats",
+        action="store_true",
+        help="Trains a downbeat tracking model")
 
     return parser.parse_args()
 
 
-def load_dataset(spectrogram_dir, label_dir):
-    dataset = BallroomDataset(spectrogram_dir, label_dir)
+def load_dataset(spectrogram_dir, label_dir, downbeats=False):
+    dataset = BallroomDataset(spectrogram_dir, label_dir, downbeats)
     return dataset
 
 
@@ -247,7 +251,10 @@ if __name__ == '__main__':
               + "Davies stopping condition.")
         quit()
 
-    dataset = load_dataset(args.spectrogram_dir, args.label_dir)
+    dataset = load_dataset(
+        args.spectrogram_dir,
+        args.label_dir,
+        args.downbeats)
     train_dataset, val_dataset, test_dataset =\
         split_dataset(dataset, args.validation_split, args.test_split)
     train_loader, val_loader, test_loader =\
@@ -258,7 +265,7 @@ if __name__ == '__main__':
 
     cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
-    model = BeatNet()
+    model = BeatNet(downbeats=args.downbeats)
     if cuda_device is not None:
         model.cuda(args.cuda_device)
 
