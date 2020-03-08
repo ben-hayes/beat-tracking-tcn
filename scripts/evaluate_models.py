@@ -18,7 +18,7 @@ from argparse import ArgumentParser
 import os
 import pickle
 
-from mir_eval.beat import f_measure, cemgil, goto, p_score, continuity
+from mir_eval.beat import evaluate
 import numpy as np
 import torch
 
@@ -40,30 +40,14 @@ if __name__ == '__main__':
 
     ds_root, ext = os.path.splitext(args.saved_k_fold_dataset)
     ds_root = os.path.splitext(ds_root)[0]
-    print(" Fold# | f-Measure | Cemgil Ac | GotoScore |  p-Score  |   CML_c   |   CML_t   |   AML_c   |   AML_t   |")
-    scores = {
-        "f_measure": [],
-        "cemgil": [],
-        "goto": [],
-        "p_score": [],
-        "cml_c": [],
-        "cml_t": [],
-        "aml_c": [],
-        "aml_t": []
-    }
+    score_history = {}
+
     for k, model_checkpoint in enumerate(args.model_checkpoints):
         dataset_file = "%s.fold%.3d%s" % (ds_root, k, ext)
         with open(dataset_file, 'rb') as f:
             _, _, test = torch.load(f)
-        
-        running_f_measure = 0.0
-        running_cemgil = 0.0
-        running_goto = 0.0
-        running_p_score = 0.0
-        running_cml_c = 0.0
-        running_cml_t = 0.0
-        running_aml_c = 0.0
-        running_aml_t = 0.0
+
+        running_scores = {} 
 
         for i in range(len(test)):
             spectrogram = test[i]["spectrogram"].unsqueeze(0)
@@ -73,64 +57,39 @@ if __name__ == '__main__':
             prediction =\
                 predict_beats_from_spectrogram(spectrogram, model_checkpoint)
 
-            f = f_measure(ground_truth, prediction)
-            cg, _ = cemgil(ground_truth, prediction)
-            gt = goto(ground_truth, prediction)
-            p = p_score(ground_truth, prediction)
-            cml_c, cml_t, aml_c, aml_t = continuity(ground_truth, prediction)
-            running_f_measure += f        
-            running_cemgil += cg
-            running_goto += gt
-            running_p_score += p
-            running_cml_c += cml_c
-            running_cml_t += cml_t
-            running_aml_c += aml_c
-            running_aml_t += aml_t
+            scores = mir_eval.beat.evaluate(ground_truth, prediction)
 
-            print(" #%.4d |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  | Other stuff ..." % (
-                k,
-                running_f_measure / (i + 1),
-                running_cemgil / (i + 1),
-                running_goto / (i + 1),
-                running_p_score / (i + 1),
-                running_cml_c / (i + 1),
-                running_cml_t / (i + 1),
-                running_aml_c / (i + 1),
-                running_aml_t / (i + 1)
-            ), end="\r")
+            for metric in scores:
+                if not running_scores[metric]:
+                    running_scores[metric] = 0.0
+                
+                running_scores[metric] += scores[metric]
 
-        mean_f_score = running_f_measure / (i + 1)
-        mean_cemgil = running_cemgil / (i + 1)
-        mean_goto = running_goto / (i + 1)
-        mean_p_score = running_p_score / (i + 1)
-        mean_cml_c = running_cml_c / (i + 1)
-        mean_cml_t = running_cml_t / (i + 1)
-        mean_aml_c = running_aml_c / (i + 1)
-        mean_aml_t = running_aml_t / (i + 1)
-        print(" #%.4d |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  |  %.5f  | Other stuff ..." % (
-            k,
-            mean_f_score,
-            mean_cemgil,
-            mean_goto,
-            mean_p_score,
-            mean_cml_c,
-            mean_cml_t,
-            mean_aml_c,
-            mean_aml_t))
+            if i == 0:
+                line = " Fold# |"
+                for metric in scores:
+                    line += " %s |" % metric
 
-        scores["f_measure"].append(mean_f_score)
-        scores["cemgil"].append(mean_cemgil)
-        scores["goto"].append(mean_goto)
-        scores["p_score"].append(mean_p_score)
-        scores["cml_c"].append(mean_cml_c)
-        scores["cml_t"].append(mean_cml_t)
-        scores["aml_c"].append(mean_aml_c)
-        scores["aml_t"].append(mean_aml_t)
-    print("Mean f-score: %.5f" % (np.mean(scores["f_measure"])))
-    print("Mean Cemgil: %.5f" % (np.mean(scores["cemgil"])))
-    print("Mean Goto: %.5f" % (np.mean(scores["goto"])))
-    print("Mean p-score: %.5f" % (np.mean(scores["p_score"])))
-    print("Mean CML_c: %.5f" % (np.mean(scores["cml_c"])))
-    print("Mean CML_t: %.5f" % (np.mean(scores["cml_t"])))
-    print("Mean AML_c: %.5f" % (np.mean(scores["aml_c"])))
-    print("Mean AML_t: %.5f" % (np.mean(scores["aml_t"])))
+                print(line)
+
+            line = " #%.4d |" % k
+            for metric in scores:
+                number_length = len(metric - 2)
+                line += " {1:.{0}f} |".format(
+                    number_length,
+                    running_scores[metric] / (i + 1))
+            print(line, end="\r")
+        print ("")
+
+        for metric in scores:
+            if not score_history[metric]:
+                score_history[metric] = []
+            score_history[metric].append(running_scores[metric])
+
+    line = "  Mean |" 
+    for metric in score_history:
+        number_length = len(metric - 2)
+        line += " {1:.{0}f} |".format(
+            number_length,
+            np.mean(score_history[metric]))
+    print(line)
