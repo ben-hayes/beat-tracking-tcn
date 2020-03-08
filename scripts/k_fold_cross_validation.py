@@ -101,7 +101,7 @@ def iterate_folds(fold_sets):
     for i in range(num_sets):
         test_set = fold_sets[i]
         val_set = fold_sets[(i + 1) % num_sets]
-        train_sets = fold_sets[:i] + fold_sets[(i + 2) % num_sets:]
+        train_sets = fold_sets[:i] + fold_sets[(i + 2):]
         train_set = ConcatDataset(train_sets)
 
         yield train_set, val_set, test_set
