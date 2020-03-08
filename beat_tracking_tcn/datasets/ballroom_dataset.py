@@ -34,7 +34,8 @@ class BallroomDataset(Dataset):
             label_dir,
             sr=22050,
             hop_size_in_seconds=0.01,
-            trim_size=(81, 3000)):
+            trim_size=(81, 3000),
+            downbeats=False):
         """
         Initialise the dataset object.
 
@@ -57,6 +58,8 @@ class BallroomDataset(Dataset):
         self.hop_size = int(np.floor(hop_size_in_seconds * 22050))
         self.trim_size = trim_size
 
+        self.downbeats = downbeats
+
     def __len__(self):
         """Overload len() calls on object."""
         return len(self.data_names)
@@ -76,7 +79,7 @@ class BallroomDataset(Dataset):
         """Fetches name of datapoint specified by index i"""
         return self.data_names[i]
 
-    def get_ground_truth(self, i, quantised=True):
+    def get_ground_truth(self, i, quantised=True, downbeats=False):
         """
         Fetches ground truth annotations for datapoint specified by index i
 
@@ -87,8 +90,8 @@ class BallroomDataset(Dataset):
             quantised (=True): Whether to return a quantised grount truth
         """
 
-        return self._get_quantised_ground_truth(i)\
-            if quantised else self._get_unquantised_ground_truth(i)
+        return self._get_quantised_ground_truth(i, downbeats)\
+            if quantised else self._get_unquantised_ground_truth(i, downbeats)
 
     def _trim_spec_and_labels(self, spec, labels):
         """
@@ -101,7 +104,10 @@ class BallroomDataset(Dataset):
         """
 
         x = np.zeros(self.trim_size)
-        y = np.zeros(self.trim_size[1])
+        if not self.downbeats:
+            y = np.zeros(self.trim_size[1])
+        else:
+            y = np.zeros((self.trim_size[1], 2))
 
         to_x = self.trim_size[0]
         to_y = min(self.trim_size[1], spec.shape[1])
@@ -121,12 +127,12 @@ class BallroomDataset(Dataset):
 
     def _text_label_to_float(self, text):
         """Exracts beat time from a text line and converts to a float"""
-        allowed = '1234567890.'
-        t = text.rstrip('\n').split(' ')[0]
-        filtered = ''.join([c for c in t if c in allowed])
-        return float(filtered)
+        allowed = '1234567890. '
+        filtered = ''.join([c for c in text if c in allowed])
+        t = filtered.rstrip('\n').split(' ')
+        return float(t[0]), float(t[1])
 
-    def _get_quantised_ground_truth(self, i):
+    def _get_quantised_ground_truth(self, i, downbeats):
         """
         Fetches the ground truth (time labels) from the appropriate
         label file. Then, quantises it to the nearest spectrogram frames in
@@ -137,10 +143,15 @@ class BallroomDataset(Dataset):
                 os.path.join(self.label_dir, self.data_names[i] + '.beats'),
                 'r') as f:
 
-            beat_times =\
-                np.array([self._text_label_to_float(line) for line in f])\
-                * self.sr
+            beat_times = []
 
+            for line in f:
+                time, index = self._text_label_to_float(line)
+                if not downbeats:
+                    beat_times.append(time * self.sr)
+                else:
+                    if index == 1:
+                        beat_times.append(time * self.sr)
         quantised_times = []
 
         for time in beat_times:
@@ -150,7 +161,7 @@ class BallroomDataset(Dataset):
 
         return np.array(quantised_times)
 
-    def _get_unquantised_ground_truth(self, i):
+    def _get_unquantised_ground_truth(self, i, downbeats):
         """
         Fetches the ground truth (time labels) from the appropriate
         label file.
@@ -159,11 +170,18 @@ class BallroomDataset(Dataset):
         with open(
                 os.path.join(self.label_dir, self.data_names[i] + '.beats'),
                 'r') as f:
+            
+            beat_times = []
 
-            beat_times =\
-                np.array([self._text_label_to_float(line) for line in f])
+            for line in f:
+                time, index = self._text_label_to_float(line)
+                if not downbeats:
+                    beat_times.append(time)
+                else:
+                    if index == 1:
+                        beat_times.append(time)
 
-        return beat_times
+        return np.array(beat_times)
 
     def _load_spectrogram_and_labels(self, i):
         """
@@ -176,19 +194,43 @@ class BallroomDataset(Dataset):
                 os.path.join(self.label_dir, data_name + '.beats'),
                 'r') as f:
 
-            beat_times = np.array(
-                [self._text_label_to_float(line) for line in f]) * self.sr
+            beat_floats = []
+            beat_indices = []
+            for line in f:
+                parsed = self._text_label_to_float(line)
+                beat_floats.append(parsed[0])
+                beat_indices.append(parsed[1])
+            beat_times = np.array(beat_floats) * self.sr
+
+            if self.downbeats:
+                downbeat_times = self.sr * np.array(
+                    [t for t, i in zip(beat_floats, beat_indices) if i == 1])
+
 
         spectrogram =\
             np.load(os.path.join(self.spectrogram_dir, data_name + '.npy'))
-        beat_vector =\
-            np.zeros(spectrogram.shape[-1])
+        if not self.downbeats:
+            beat_vector = np.zeros(spectrogram.shape[-1])
+        else:
+            beat_vector = np.zeros((spectrogram.shape[-1], 2))
 
         for time in beat_times:
             spec_frame =\
                 min(int(time / self.hop_size), beat_vector.shape[0] - 1)
             for n in range(-2, 3):
                 if 0 <= spec_frame + n < beat_vector.shape[0]:
-                    beat_vector[spec_frame + n] = 1.0 if n == 0 else 0.5
+                    if not self.downbeats:
+                        beat_vector[spec_frame + n] = 1.0 if n == 0 else 0.5
+                    else:
+                        beat_vector[spec_frame + n, 0] = 1.0 if n == 0 else 0.5
+        
+        if self.downbeats:
+            for time in downbeat_times:
+                spec_frame =\
+                    min(int(time / self.hop_size), beat_vector.shape[0] - 1)
+                for n in range(-2, 3):
+                    if 0 <= spec_frame + n < beat_vector.shape[0]:
+                        beat_vector[spec_frame + n, 1] = 1.0 if n == 0 else 0.5
+
 
         return spectrogram, beat_vector
