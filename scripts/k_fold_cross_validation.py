@@ -13,9 +13,8 @@ Descrption: Train several BeatNet models on different folds of the dataset
 from argparse import ArgumentParser
 import math
 import os
-import pickle
 
-from torch import device
+from torch import device, save
 from torch.utils.data import random_split, ConcatDataset
 
 from beat_tracking_tcn.models.beat_net import BeatNet
@@ -113,7 +112,7 @@ def make_fold_output_name(base_name, fold):
 
 def save_datasets(datasets, file):
     with open(file, 'wb') as f:
-        pickle.dump(datasets, f)
+        torch.save(datasets, f)
 
 
 if __name__ == "__main__":
