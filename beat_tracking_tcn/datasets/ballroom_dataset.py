@@ -130,9 +130,12 @@ class BallroomDataset(Dataset):
 
     def _text_label_to_float(self, text):
         """Exracts beat time from a text line and converts to a float"""
-        allowed = '1234567890. '
+        allowed = '1234567890. \t'
         filtered = ''.join([c for c in text if c in allowed])
-        t = filtered.rstrip('\n').split(' ')
+        if '\t' in filtered:
+            t = filtered.rstrip('\n').split('\t')
+        else:
+            t = filtered.rstrip('\n').split(' ')
         return float(t[0]), float(t[1])
 
     def _get_quantised_ground_truth(self, i, downbeats):
