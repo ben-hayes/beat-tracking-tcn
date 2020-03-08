@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
             line = " #%.4d |" % k
             for metric in scores:
-                number_length = len(metric - 2)
+                number_length = len(metric) - 2
                 line += " {1:.{0}f} |".format(
                     number_length,
                     running_scores[metric] / (i + 1))
@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
     line = "  Mean |" 
     for metric in score_history:
-        number_length = len(metric - 2)
+        number_length = len(metric) - 2
         line += " {1:.{0}f} |".format(
             number_length,
             np.mean(score_history[metric]))
