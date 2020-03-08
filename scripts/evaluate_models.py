@@ -71,7 +71,6 @@ if __name__ == '__main__':
                     heading = " %s " % metric
                     if len(metric) < 6:
                         padding_length = int((6 - len(metric)) / 2)
-                        print(padding_length)
                         padding = " " * padding_length
                         heading = padding + heading + padding
                     heading += "|"
