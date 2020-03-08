@@ -57,10 +57,10 @@ if __name__ == '__main__':
             prediction =\
                 predict_beats_from_spectrogram(spectrogram, model_checkpoint)
 
-            scores = mir_eval.beat.evaluate(ground_truth, prediction)
+            scores = evaluate(ground_truth, prediction)
 
             for metric in scores:
-                if not running_scores[metric]:
+                if metric not in running_scores:
                     running_scores[metric] = 0.0
                 
                 running_scores[metric] += scores[metric]
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         print ("")
 
         for metric in scores:
-            if not score_history[metric]:
+            if metric not in score_history:
                 score_history[metric] = []
             score_history[metric].append(running_scores[metric])
 
