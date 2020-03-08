@@ -89,7 +89,7 @@ def parse_args():
 
 
 def load_dataset(spectrogram_dir, label_dir, downbeats=False):
-    dataset = BallroomDataset(spectrogram_dir, label_dir, downbeats)
+    dataset = BallroomDataset(spectrogram_dir, label_dir, downbeats=downbeats)
     return dataset
 
 
