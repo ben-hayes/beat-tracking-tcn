@@ -112,7 +112,7 @@ def make_fold_output_name(base_name, fold):
 
 def save_datasets(datasets, file):
     with open(file, 'wb') as f:
-        torch.save(datasets, f)
+        save(datasets, f)
 
 
 if __name__ == "__main__":
