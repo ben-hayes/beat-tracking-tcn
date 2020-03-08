@@ -68,7 +68,14 @@ if __name__ == '__main__':
             if k == 0 and i == 0:
                 line = " Fold# |"
                 for metric in scores:
-                    line += " %s |" % metric
+                    heading = " %s " % metric
+                    if len(metric) < 6:
+                        padding_length = int((6 - len(metric)) / 2)
+                        print(padding_length)
+                        padding = " " * padding_length
+                        heading = padding + heading + padding
+                    heading += "|"
+                    line += heading
 
                 print(line)
 
@@ -76,7 +83,7 @@ if __name__ == '__main__':
             for metric in scores:
                 number_length = len(metric) - 2
                 line += " {1:.{0}f} |".format(
-                    number_length,
+                    max(4, number_length),
                     running_scores[metric] / (i + 1))
             print(line, end="\r")
         print ("")
@@ -84,12 +91,12 @@ if __name__ == '__main__':
         for metric in scores:
             if metric not in score_history:
                 score_history[metric] = []
-            score_history[metric].append(running_scores[metric])
+            score_history[metric].append(running_scores[metric] / (i + 1))
 
     line = "  Mean |" 
     for metric in score_history:
         number_length = len(metric) - 2
         line += " {1:.{0}f} |".format(
-            number_length,
+            max(4, number_length),
             np.mean(score_history[metric]))
     print(line)
