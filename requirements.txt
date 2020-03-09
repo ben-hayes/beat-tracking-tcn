@@ -2,7 +2,7 @@ appnope==0.1.0
 astroid==2.3.3
 audioread==2.1.8
 backcall==0.1.0
--e git+git@github.com:ben-hayes/beat-tracking-tcn.git@5d5630736e4fcc1c891a294d19e7684b21bf64be#egg=beat_tracking_tcn
+-e git+git@github.com:ben-hayes/beat-tracking-tcn.git@bc1bdd3352e8c28adeac3344d8d261aa9d87515e#egg=beat_tracking_tcn
 cffi==1.14.0
 Cython==0.29.15
 decorator==4.4.2
@@ -27,6 +27,7 @@ pickleshare==0.7.5
 prompt-toolkit==3.0.3
 ptyprocess==0.6.0
 pycparser==2.19
+pyenchant==3.0.1
 Pygments==2.5.2
 pylint==2.4.4
 resampy==0.2.2
