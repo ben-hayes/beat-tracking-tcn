@@ -1,6 +1,6 @@
 # Beat Tracking TCN
 
-An implementation of Davies &amp; Böck's beat-tracking temporal convolutional network [1].
+An implementation of two adaptations to Davies &amp; Böck's beat-tracking temporal convolutional network [1].
 
 ## Usage
 
@@ -29,7 +29,7 @@ pip install -e .
 
 The beat tracker can then be invoked as above.
 
-* It is important to use the full install command as listed, as madmom's setup.py itself depends on some packages (namely, `cython` and `numpy`. Splitting dependencies over two files like this prevents the install from falling down.
+\* It is important to use the full install command as listed, as madmom's setup.py itself depends on some packages (namely, `cython` and `numpy`. Splitting dependencies over two files like this prevents the install from falling down.
 
 ## References
 
