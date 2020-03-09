@@ -10,9 +10,9 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-The dependencies can then be installed like so:
+The dependencies can then be installed like so*:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-env.txt && pip install -r requirements.txt
 ```
 
 Once this is done, the beat tracker can be accessed like this:
@@ -28,6 +28,8 @@ pip install -e .
 ```
 
 The beat tracker can then be invoked as above.
+
+* It is important to use the full install command as listed, as madmom's setup.py itself depends on some packages (namely, `cython` and `numpy`. Splitting dependencies over two files like this prevents the install from falling down.
 
 ## References
 
