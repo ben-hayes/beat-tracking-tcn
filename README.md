@@ -22,6 +22,13 @@ from beat_tracking_tcn.beat_tracker import beatTracker
 beats, downbeats = beatTracker("path_to_audio_file")
 ```
 
+Alternatively, if you have the required dependencies `librosa`, `madmom`, `mir-eval`, `numpy`, and `torch` installed system-wide, you can perform a system wide install by running the following command from the root of this source repo:
+```bash
+pip install -e .
+```
+
+The beat tracker can then be invoked as above.
+
 ## References
 
 [1] M. E. P. Davies and S. Bock, _‘Temporal convolutional networks for musical audio beat tracking’_, in 2019 27th European Signal Processing Conference (EUSIPCO), A Coruna, Spain, 2019, pp. 1–5, doi: 10.23919/EUSIPCO.2019.8902578.
