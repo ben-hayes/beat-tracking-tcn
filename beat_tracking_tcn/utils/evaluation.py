@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: evaluation.py
+File: beat_tracking_tcn/utils/evaluation.py
 
 Description: Provides evaluation functions for a beat detection algorithm. The
 evaluation metrics are all implemented as described in Davies et al 2009 [1]

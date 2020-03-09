@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: training.py
+File: beat_tracking_tcn/utils/training.py
 
 Description: Provides utilities for training a BeatNet model on a given
              dataset.

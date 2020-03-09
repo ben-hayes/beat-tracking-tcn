@@ -1,3 +1,20 @@
+"""
+Ben Hayes 2020
+
+ECS7006P Music Informatics
+
+Coursework 1: Beat Tracking
+
+File: scripts/evaluate_model.py
+
+Descrption: Evaluate a single given beat tracking model according to metrics as
+            outlined in Davies et al 2009 [1]. Provides functions for other
+            evaluation scripts to use.
+
+References:
+    [1] M. E. P. Davies, N. Degara, and M. D. Plumbley, ‘Evaluation Methods for
+        Musical Audio Beat Tracking Algorithms’, p. 17.
+"""
 from argparse import ArgumentParser
 
 from mir_eval.beat import evaluate
@@ -21,6 +38,11 @@ def evaluate_model(
         spectrogram,
         ground_truth,
         downbeats=False):
+    """
+    Given a model checkpoint, a single spectrogram, and the corresponding
+    ground truth, evaluate the model's performance on all beat tracking metrics
+    offered by mir_eval.beat.
+    """        
 
     prediction = predict_beats_from_spectrogram(
         spectrogram,
@@ -41,11 +63,18 @@ def evaluate_model_on_dataset(
         ground_truths,
         downbeats=False,
         print_callback=None):
+    """
+    Run through a whole instance of torch.utils.data.Dataset and compare the
+    model's predictions to the given ground truths.
+    """        
 
+    # Create dicts to store scores and histories
     mean_scores = {}
     mean_downbeat_scores = {}
     running_scores = {}
     running_downbeat_scores = {}
+
+    # Iterate over dataset
     for i in range(len(dataset)):
         spectrogram = dataset[i]["spectrogram"].unsqueeze(0)
         ground_truth = ground_truths[i]
@@ -56,6 +85,9 @@ def evaluate_model_on_dataset(
             ground_truth,
             downbeats)
 
+        # If we're tracking downbeats, separate out the evaluation scores and
+        # process independently. Otherwise, we only need to worry about beat
+        scores
         if downbeats:
             beat_scores = scores[0]
             downbeat_scores = scores[1]
@@ -73,9 +105,12 @@ def evaluate_model_on_dataset(
             
             running_scores[metric] += beat_scores[metric]
         
+        # Each iteration, pass our current index and our running score total
+        # to a print callback function.
         if print_callback is not None:
             print_callback(i, running_scores)
 
+    # After all iterations, calculate mean scores.
     for metric in running_scores:
         mean_scores[metric] = running_scores[metric] / (i + 1)        
     if downbeats:
@@ -83,6 +118,7 @@ def evaluate_model_on_dataset(
             mean_downbeat_scores[metric] =\
                 running_downbeat_scores[metric] / (i + 1)        
 
+    # Return a dictionary of helpful information
     return {
         "total_examples": i + 1,
         "scores": mean_scores,
@@ -93,18 +129,29 @@ if __name__ == "__main__":
     args = parse_args()
 
     def print_callback(i, running_scores):
+        """
+        Evaluation function set up such that scores are passed to a callback
+        after each iteration — this allows for printing or logging of results.
+        This function prints results to a table in real time.
+        """        
         def make_metric_heading(metric):
+            # In order to fit the results on screen, let's strip all vowels,
+            # except the first one, and spaces from the given metric name.
             words = metric.split(" ")
             for i, _ in enumerate(words):
                 for vowel in "aeiouAEIOU":
                     words[i] = words[i][0] + words[i][1:].replace(vowel, "")
             return "".join(words)
 
+        # The first iteration of the first fold, we also need to print the
+        # table headnings.
         if i == 0:
             line = ""
             for metric in running_scores:
                 metric_heading = make_metric_heading(metric)
                 heading = " %s " % metric_heading
+                # Pad any headings shorter than 6 characters so that we have
+                # enough space for at least 4 decimal places.
                 if len(metric_heading) < 6:
                     padding_length = int((6 - len(metric_heading)) / 2)
                     padding = " " * padding_length
@@ -115,6 +162,8 @@ if __name__ == "__main__":
                 line += heading
             print(line)
 
+        # Build a line of scores, truncating the decimal places to match the
+        # length of the given heading.
         line = ""
         for metric in running_scores:
             metric_heading = make_metric_heading(metric)
@@ -122,13 +171,16 @@ if __name__ == "__main__":
             line += " {1:.{0}f} |".format(
                 max(4, number_length),
                 running_scores[metric] / (i + 1))
+        # Print, overwriting the previously printed line each time.
         print(line, end="\r")
 
+    # Load the dataset from the given directories
     dataset = BallroomDataset(
         args.spectrogram_dir,
         args.label_dir,
         downbeats=args.downbeats)
 
+    # Process downbeats and beats independently if necessary
     if args.downbeats:
         ground_truths = tuple(zip(
             [dataset.get_ground_truth(i) for i in range(len(dataset))],
@@ -137,6 +189,7 @@ if __name__ == "__main__":
     else:
         ground_truths = (dataset.get_ground_truth(i) for i in range(len(dataset)))
 
+    # Run evaluation
     evaluate_model_on_dataset(
         args.model_checkpoint,
         dataset,

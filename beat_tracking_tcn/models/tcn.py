@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: models/tcn.py
+File: beat_tracking_tcn/models/tcn.py
 Description: Implements a non-causal temporal convolutional network based on
              the model used in Bai et al 2018 [1]
 References:

@@ -137,3 +137,4 @@ data/*
 
 models
 k_fold_datasets
+*.wav

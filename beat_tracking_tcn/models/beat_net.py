@@ -5,7 +5,7 @@ ECS7006P Music Informatics
 
 Coursework 1: Beat Tracking
 
-File: models/beat_net.py
+File: beat_tracking_tcn/models/beat_net.py
 Description: A CNN including a Temporal Convolutional Layer designed to predict
              a vector of beat activations from an input spectrogram (tested
              with mel spectrograms).

@@ -22,6 +22,8 @@ from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.training import train, evaluate
 
 
+# Some tunable constants that we don't need to set often enough to
+# warrant entire command line params
 STOPPING_THRESHOLD = 0.001
 DAVIES_CONDITION_EPOCHS = 50
 
@@ -88,11 +90,19 @@ def parse_args():
 
 
 def load_dataset(spectrogram_dir, label_dir, downbeats=False):
+    """
+    Creates an instance of BallroomDataset from the given folders of
+    spectrograms and labels.
+    """    
     dataset = BallroomDataset(spectrogram_dir, label_dir, downbeats=downbeats)
     return dataset
 
 
 def split_dataset(dataset, validation_split, test_split):
+    """
+    Splits a given torch.utils.data.Dataset into train, validation and test
+    sets based on the given proportions.
+    """    
     dataset_length = len(dataset)
     test_count = int(dataset_length * test_split)\
         if test_split is not None else 0
@@ -102,6 +112,9 @@ def split_dataset(dataset, validation_split, test_split):
 
 
 def make_data_loaders(datasets, batch_size=1, num_workers=8):
+    """
+    Given an iterable container of datasets, output a tuple of DataLoaders
+    """    
     loaders = (
         DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
         for dataset in datasets)
@@ -109,17 +122,27 @@ def make_data_loaders(datasets, batch_size=1, num_workers=8):
 
 
 def save_model(model, output_file):
+    """
+    Dump the model state dict to disk using torch.save
+    """
     state_dict = model.state_dict()
     with open(output_file, 'wb') as f:
         save(state_dict, f)
 
 
 def save_datasets(datasets, file):
+    """
+    Dump the datasets to disk using torch.save
+    """    
     with open(file, 'wb') as f:
         save(datasets, f)
 
 
 def loss_stopped_falling(loss_history, epochs):
+    """
+    Check if drop in first order difference over a given number of epochs is
+    below the STOPPING_THRESHOLD.
+    """    
     return - np.sum(np.diff(loss_history[-epochs:])) < STOPPING_THRESHOLD
 
 
@@ -133,7 +156,12 @@ def train_loop(
         output_file=None,
         davies_stopping_condition=False,
         fold=None):
-    
+    """
+    Run the main training loop.
+    """    
+
+    # The train function defined in the beat_tracking_tcn library offloads
+    # reporting to callbacks, which are implemented here:
     def train_callback(batch_report):
         if batch_report["batch_index"] % 10 == 9:
             if fold is None:
@@ -223,6 +251,9 @@ def train_loop(
 
 
 def test_model(model, test_loader, cuda_device=None):
+    """
+    Evaluate the model on the dataset slice pointed to by the given DataLoader.
+    """    
     def test_callback(batch_report):
         print("Test Batch %d; Loss: %.3f; Epoch Loss: %.3f" % (
                 batch_report["batch_index"],
@@ -245,11 +276,14 @@ def test_model(model, test_loader, cuda_device=None):
 if __name__ == '__main__':
     args = parse_args()
 
+    # Make sure we're not trying to do anything silly like use the stopping
+    # condition with a validation size of 0
     if args.validation_split == 0.0 and args.davies_stopping_condition:
         print("Validation split must be greater than zero in order to use "
               + "Davies stopping condition.")
         quit()
 
+    # Prepare datasets and DataLoaders
     dataset = load_dataset(
         args.spectrogram_dir,
         args.label_dir,
@@ -261,13 +295,14 @@ if __name__ == '__main__':
             (train_dataset, val_dataset, test_dataset),
             batch_size=args.batch_size)
 
-
+    # Initialise model with GPU acceleration if possible
     cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
     model = BeatNet(downbeats=args.downbeats)
     if cuda_device is not None:
         model.cuda(args.cuda_device)
 
+    # Kick off training
     train_loop(
         model,
         train_loader,
@@ -276,13 +311,16 @@ if __name__ == '__main__':
         cuda_device=cuda_device,
         output_file=args.output_file,
         davies_stopping_condition=args.davies_stopping_condition)
-    
+
+    # Save our model to disk 
     if args.output_file is not None:
         save_model(model, args.output_file)
 
+    # Save our dataset splits for reproducibility
     if args.dataset_output_file is not None:
         save_datasets(
             (train_dataset, val_dataset, test_dataset),
             args.dataset_output_file)
-    
+
+    # Evaluate on our test set
     test_model(model, test_loader, cuda_device=cuda_device)

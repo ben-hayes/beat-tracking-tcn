@@ -83,6 +83,9 @@ def parse_args():
 
 
 def make_fold_datasets(dataset, num_folds):
+    """
+    Split datasets into folds.
+    """
     dataset_length = len(dataset)
     fold_size = math.floor(dataset_length / num_folds)
     remainder = dataset_length - (num_folds * fold_size)
@@ -96,6 +99,10 @@ def make_fold_datasets(dataset, num_folds):
     return fold_sets
 
 def iterate_folds(fold_sets):
+    """
+    Do necessary array slices to iterate correctly over folds for training,
+    validating and testing.
+    """
     num_sets = len(fold_sets)
     for i in range(num_sets):
         test_set = fold_sets[i]
@@ -106,11 +113,17 @@ def iterate_folds(fold_sets):
         yield train_set, val_set, test_set
 
 def make_fold_output_name(base_name, fold):
+    """
+    Add numbers to output file name.
+    """
     filename, ext = os.path.splitext(base_name)
     new_name = "%s.fold%.3d%s" % (filename, fold, ext)
     return new_name
 
 def save_datasets(datasets, file):
+    """
+    Dump with PyTorch save
+    """    
     with open(file, 'wb') as f:
         save(datasets, f)
 
@@ -126,6 +139,7 @@ if __name__ == "__main__":
     cuda_device = device('cuda:%d' % args.cuda_device)\
                   if args.cuda_device is not None else None
 
+    # Similar to our train script, but we do this k times
     for k, datasets in enumerate(iterate_folds(fold_sets)):
         train, val, test = datasets
         model = BeatNet(downbeats=args.downbeats)

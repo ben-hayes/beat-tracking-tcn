@@ -1,3 +1,14 @@
+"""
+Ben Hayes 2020
+
+ECS7006P Music Informatics
+
+Coursework 1: Beat Tracking
+
+File: beat_tracking_tcn/utils/spectrograms.py
+
+Descrption: Utility functions for computing and trimming mel spectrograms.
+"""
 import os
 
 import librosa
