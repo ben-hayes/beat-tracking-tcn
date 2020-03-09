@@ -1,6 +1,6 @@
 # Beat Tracking TCN
 
-An implementation of Davies &amp; Böck's beat-tracking temporal convolutional network [1].
+An implementation of two adaptations to Davies &amp; Böck's beat-tracking temporal convolutional network [1].
 
 ## Usage
 
@@ -10,9 +10,9 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-The dependencies can then be installed like so:
+The dependencies can then be installed like so*:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-env.txt && pip install -r requirements.txt
 ```
 
 Once this is done, the beat tracker can be accessed like this:
@@ -21,6 +21,15 @@ from beat_tracking_tcn.beat_tracker import beatTracker
 
 beats, downbeats = beatTracker("path_to_audio_file")
 ```
+
+Alternatively, if you have the required dependencies `librosa`, `madmom`, `mir-eval`, `numpy`, and `torch` installed system-wide, you can perform a system wide install by running the following command from the root of this source repo:
+```bash
+pip install -e .
+```
+
+The beat tracker can then be invoked as above.
+
+\* It is important to use the full install command as listed, as madmom's setup.py itself depends on some packages (namely, `cython` and `numpy`. Splitting dependencies over two files like this prevents the install from falling down.
 
 ## References
 
