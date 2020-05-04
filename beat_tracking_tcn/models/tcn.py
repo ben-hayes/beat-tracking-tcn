@@ -98,7 +98,7 @@ class NonCausalTemporalLayer(nn.Module):
         y = self.conv1(x)
         y = self.elu1(y)
         y = self.dropout1(y)
-        y = self.conv2(x)
+        y = self.conv2(y)
         y = self.elu2(y)
         y = self.dropout2(y)
 
