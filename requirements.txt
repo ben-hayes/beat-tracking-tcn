@@ -1,5 +1,5 @@
 librosa==0.7.2
 mir-eval==0.5
-torch==1.4.0
+torch==2.2.0
 -e git+git@github.com:ben-hayes/beat-tracking-tcn.git@bc1bdd3352e8c28adeac3344d8d261aa9d87515e#egg=beat_tracking_tcn
 madmom==0.16.1
